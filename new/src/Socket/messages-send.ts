@@ -47,6 +47,8 @@ import {
 import { USyncQuery, USyncUser } from '../WAUSync'
 import { makeGroupsSocket } from './groups'
 
+const ListType = proto.Message.ListMessage.ListType
+
 export const makeMessagesSocket = (config: SocketConfig) => {
 	const {
 		logger,
@@ -595,15 +597,31 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				stanza.attrs.to = destinationJid
 			}
 
-			if (shouldIncludeDeviceIdentity) {
-				;(stanza.content as BinaryNode[]).push({
-					tag: 'device-identity',
-					attrs: {},
-					content: encodeSignedDeviceIdentity(authState.creds.account!, true)
-				})
+                        if (shouldIncludeDeviceIdentity) {
+                                ;(stanza.content as BinaryNode[]).push({
+                                        tag: 'device-identity',
+                                        attrs: {},
+                                        content: encodeSignedDeviceIdentity(authState.creds.account!, true)
+                                })
 
-				logger.debug({ jid }, 'adding device identity')
-			}
+                                logger.debug({ jid }, 'adding device identity')
+                        }
+
+                        const buttonType = getButtonType(message)
+                        if (buttonType) {
+                                ;(stanza.content as BinaryNode[]).push({
+                                        tag: 'biz',
+                                        attrs: {},
+                                        content: [
+                                                {
+                                                        tag: buttonType,
+                                                        attrs: getButtonArgs(message)
+                                                }
+                                        ]
+                                })
+
+                                logger.debug({ jid }, 'adding business node')
+                        }
 
 			if (additionalNodes && additionalNodes.length > 0) {
 				;(stanza.content as BinaryNode[]).push(...additionalNodes)
@@ -625,11 +643,11 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		return 'text'
 	}
 
-	const getMediaType = (message: proto.IMessage) => {
-		if (message.imageMessage) {
-			return 'image'
-		} else if (message.videoMessage) {
-			return message.videoMessage.gifPlayback ? 'gif' : 'video'
+        const getMediaType = (message: proto.IMessage) => {
+                if (message.imageMessage) {
+                        return 'image'
+                } else if (message.videoMessage) {
+                        return message.videoMessage.gifPlayback ? 'gif' : 'video'
 		} else if (message.audioMessage) {
 			return message.audioMessage.ptt ? 'ptt' : 'audio'
 		} else if (message.contactMessage) {
@@ -654,10 +672,39 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			return 'product'
 		} else if (message.interactiveResponseMessage) {
 			return 'native_flow_response'
-		} else if (message.groupInviteMessage) {
-			return 'url'
-		}
-	}
+                } else if (message.groupInviteMessage) {
+                        return 'url'
+                }
+        }
+
+        const getButtonType = (message: proto.IMessage) => {
+                if (message.buttonsMessage) {
+                        return 'buttons'
+                } else if (message.buttonsResponseMessage) {
+                        return 'buttons_response'
+                } else if (message.interactiveResponseMessage) {
+                        return 'interactive_response'
+                } else if (message.listMessage) {
+                        return 'list'
+                } else if (message.listResponseMessage) {
+                        return 'list_response'
+                }
+        }
+
+        const getButtonArgs = (message: proto.IMessage) => {
+                if (message.templateMessage) {
+                        // TODO: Add attributes
+                        return {}
+                } else if (message.listMessage) {
+                        const type = message.listMessage.listType
+                        if (!type) {
+                                throw new Boom('Expected list type inside message')
+                        }
+                        return { v: '2', type: ListType[type].toLowerCase() }
+                } else {
+                        return {}
+                }
+        }
 
 	const getPrivacyTokens = async (jids: string[]) => {
 		const t = unixTimestampSeconds().toString()
