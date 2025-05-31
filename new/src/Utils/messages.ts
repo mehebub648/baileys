@@ -319,9 +319,9 @@ export const generateWAMessageContent = async (
        let m: WAMessageContent = {}
        if ('interactiveButtons' in message) {
                const header = message.header || {}
-               let image: proto.Message.IImageMessage | undefined
-               let video: proto.Message.IVideoMessage | undefined
-               let document: proto.Message.IDocumentMessage | undefined
+               let image: proto.Message.IImageMessage | null | undefined
+               let video: proto.Message.IVideoMessage | null | undefined
+               let document: proto.Message.IDocumentMessage | null | undefined
 
                if (header.image) {
                        ;({ imageMessage: image } = await prepareWAMessageMedia({ image: header.image }, options))
@@ -332,7 +332,7 @@ export const generateWAMessageContent = async (
                }
 
                if (header.document) {
-                       ;({ documentMessage: document } = await prepareWAMessageMedia({ document: header.document }, options))
+                       ;({ documentMessage: document } = await prepareWAMessageMedia({ document: header.document, mimetype: MIMETYPE_MAP.document! }, options))
                }
 
                m = {
