@@ -366,6 +366,18 @@ export const generateWAMessageContent = async (
                                }
                        }
                }
+       } else if ('sections' in message) {
+               const listMessage: proto.Message.IListMessage = {
+                       sections: message.sections,
+                       buttonText: message.buttonText,
+                       title: message.title,
+                       footerText: message.footer,
+                       description: message.text,
+                       listType: Object.prototype.hasOwnProperty.call(message, 'listType')
+                               ? message.listType
+                               : proto.Message.ListMessage.ListType.SINGLE_SELECT
+               }
+               m = { listMessage }
        } else if ('text' in message) {
 		const extContent = { text: message.text } as WATextMessage
 
