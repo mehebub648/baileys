@@ -1,6 +1,6 @@
 // index.js
 
-const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, DisconnectReason } = require('baileys');
+const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, DisconnectReason } = require('./baileys');
 const qrcode = require('qrcode-terminal'); // For printing QR
 
 async function startBot() {
@@ -52,31 +52,32 @@ async function startBot() {
     if (!text) return;
 
     if (text === '!ping') {
-      await sock.sendMessage(sender, {
-        text: 'This is a button message!', // image: buffer or // image: { url: url } If you want to use images
-        caption: 'caption', // Use this if you are using an image or video
-        footer: '© 2025 - Ssa Team',
-        buttons: [
-        {
-                buttonId: 'Id1',
-                buttonText: {
-                    displayText: 'Button 1'
-                }
-            },
-            {
-                buttonId: 'Id2',
-                buttonText: {
-                    displayText: 'Button 2'
-                }
-            },
-            {
-                buttonId: 'Id3',
-                buttonText: {
-                    displayText: 'Button 3'
-                }
-            }
-        ]
-        });
+      await sock.sendMessage(sender,  {
+   text: 'This is a template message!',
+   footer: '© 2025 - Ssa Team',
+   templateButtons: [{
+         index: 1,
+         urlButton: {
+            displayText: 'Follow Me',
+            url: 'https://api.ssateam.my.id'
+         },
+      },
+      {
+         index: 2,
+         callButton: {
+            displayText: 'Call Me!',
+            phoneNumber: '628xxx'
+         },
+      },
+      {
+         index: 3,
+         quickReplyButton: {
+            displayText: 'This is a reply, just like normal buttons!',
+            id: 'id-like-buttons-message'
+         },
+      }
+   ]
+});
       console.log(`↩️ Replied "Pong!" to ${sender}`);
     }
   });
