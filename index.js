@@ -1,6 +1,6 @@
 // index.js
 
-const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, DisconnectReason } = require('./baileys');
+const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, DisconnectReason } = require('./baileys/new');
 const qrcode = require('qrcode-terminal'); // For printing QR
 
 async function startBot() {
@@ -38,6 +38,21 @@ async function startBot() {
       if (shouldReconnect) startBot();
     } else if (connection === 'open') {
       console.log('✅ Connected to WhatsApp!');
+      // get groups and save a json
+        sock.groupFetchAllParticipating().then(groups => {
+            // Save groups to a JSON file
+            const groupList = Object.values(groups).map(group => ({
+                id: group.id,
+                subject: group.subject,
+                owner: group.owner,
+                participants: group.participants.length
+            }));
+            const fs = require('fs');
+            fs.writeFileSync('groups.json', JSON.stringify(groupList, null, 2));
+            console.log('Groups fetched and saved to groups.json');
+        }).catch(err => {
+            console.error('Error fetching groups:', err);
+        });
     }
   });
 
@@ -53,27 +68,124 @@ async function startBot() {
 
     if (text === '!ping') {
       await sock.sendMessage(sender, {
-        text: 'This is an interactive button message!',
+        text: 'This is an Interactive message!',
+        title: 'Hiii',
+        subtitle: 'There is a subtitle',
         footer: '© 2025 - Ssa Team',
-        buttons: [
-          {
-            buttonId: 'id-follow',
-            buttonText: { displayText: 'Follow Me' },
-            type: 1
-          },
-          {
-            buttonId: 'id-call',
-            buttonText: { displayText: 'Call Me!' },
-            type: 1
-          },
-          {
-            buttonId: 'id-reply',
-            buttonText: { displayText: 'Quick Reply' },
-            type: 1
-          }
-        ],
-        headerType: 1
-      });
+        interactiveButtons: [
+            {
+                name: 'quick_reply',
+                buttonParamsJson: JSON.stringify({
+                    display_text: 'quick reply',
+                    id: 'your_id'
+                })
+            },
+            {
+                name: 'cta_url',
+                buttonParamsJson: JSON.stringify({
+                    display_text: 'cta url',
+                    url: 'https://api.ssateam.my.id',
+                    merchant_url: 'https://api.ssateam.my.id'
+                })
+            },
+            {
+                name: 'cta_copy',
+                buttonParamsJson: JSON.stringify({
+                    display_text: 'cta copy',
+                    copy_code: '1234'
+                })
+            },
+            {
+                name: 'cta_call',
+                buttonParamsJson: JSON.stringify({
+                    display_text: 'cta call',
+                    phone_number: '628xxx'
+                })
+            },
+            {
+                name: 'cta_catalog',
+                buttonParamsJson: JSON.stringify({
+                    business_phone_number: '628xxx'
+                })
+            },
+            {
+                name: 'cta_reminder',
+                buttonParamsJson: JSON.stringify({
+                    display_text: 'cta reminder'
+                })
+            },
+            {
+                name: 'cta_cancel_reminder',
+                buttonParamsJson: JSON.stringify({
+                    display_text: 'cta cancel reminder'
+                })
+            },
+            {
+                name: 'address_message',
+                buttonParamsJson: JSON.stringify({
+                    display_text: 'address message'
+                })
+            },
+            {
+                name: 'send_location',
+                buttonParamsJson: JSON.stringify({
+                    display_text: 'send location'
+                })
+            },
+            {
+                name: 'open_webview',
+                buttonParamsJson: JSON.stringify({
+                    title: 'open webview',
+                    link: {
+                    in_app_webview: true, // or false
+                    url: 'https://api.ssateam.my.id'
+                    }
+                })
+            },
+            {
+                name: 'mpm',
+                buttonParamsJson: JSON.stringify({
+                    product_id: '8816262248471474'
+                })
+            },
+            {
+                name: 'wa_payment_transaction_details',
+                buttonParamsJson: JSON.stringify({
+                    transaction_id: '12345848'
+                })
+            },
+            {
+                name: 'automated_greeting_message_view_catalog',
+                buttonParamsJson: JSON.stringify({
+                    catalog_id: '12345848'
+                })
+            },
+            {
+                name: 'single_select',
+                buttonParamsJson: JSON.stringify({
+                    title: 'single select',
+                    sections: [{
+                    title: 'Title 1',
+                    highlight_label: 'Highlight label 1',
+                    rows: [
+                        {
+                            header: 'Header 1',
+                            title: 'Title 1',
+                            description: 'Description 1',
+                            id: 'Id 1'
+                        },
+                        {
+                            header: 'Header 2',
+                            title: 'Title 2',
+                            description: 'Description 2',
+                            id: 'Id 2'
+                        }
+                    ]
+                    }]
+                })
+            }
+        ]
+        });
       console.log(`↩️ Replied "Pong!" to ${sender}`);
     }
   });
