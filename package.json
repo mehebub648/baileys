@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "baileys": "file:baileys/new",
+    "baileys": "file:baileys",
     "qrcode-terminal": "^0.12.0"
   }
 }
