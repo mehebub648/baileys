@@ -191,17 +191,28 @@ export type AnyRegularMessageContent = (
 			buttonReply: ButtonReplyInfo
 			type: 'template' | 'plain'
 	  }
-	| {
-			groupInvite: GroupInviteInfo
-	  }
-	| {
-			listReply: Omit<proto.Message.IListResponseMessage, 'contextInfo'>
-	  }
-	| {
-			pin: WAMessageKey
-			type: proto.PinInChat.Type
-			/**
-			 * 24 hours, 7 days, 30 days
+        | {
+                        groupInvite: GroupInviteInfo
+          }
+        | {
+                        listReply: Omit<proto.Message.IListResponseMessage, 'contextInfo'>
+          }
+       | ({
+                       /** interactive list message */
+                       sections: proto.Message.ListMessage.ISection[]
+                       buttonText: string
+                       text?: string
+                       title?: string
+                       footer?: string
+                       listType?: proto.Message.ListMessage.ListType
+         } & Mentionable &
+                       Contextable &
+                       Editable)
+        | {
+                        pin: WAMessageKey
+                        type: proto.PinInChat.Type
+                        /**
+                         * 24 hours, 7 days, 30 days
 			 */
 			time?: 86400 | 604800 | 2592000
 	  }
