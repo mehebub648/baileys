@@ -316,8 +316,57 @@ export const generateWAMessageContent = async (
 	message: AnyMessageContent,
 	options: MessageContentGenerationOptions
 ) => {
-	let m: WAMessageContent = {}
-	if ('text' in message) {
+       let m: WAMessageContent = {}
+       if ('interactiveButtons' in message) {
+               const header = message.header || {}
+               let image: proto.Message.IImageMessage | undefined
+               let video: proto.Message.IVideoMessage | undefined
+               let document: proto.Message.IDocumentMessage | undefined
+
+               if (header.image) {
+                       ;({ imageMessage: image } = await prepareWAMessageMedia({ image: header.image }, options))
+               }
+
+               if (header.video) {
+                       ;({ videoMessage: video } = await prepareWAMessageMedia({ video: header.video }, options))
+               }
+
+               if (header.document) {
+                       ;({ documentMessage: document } = await prepareWAMessageMedia({ document: header.document }, options))
+               }
+
+               m = {
+                       viewOnceMessageV2Extension: {
+                               message: {
+                                       messageContextInfo: {
+                                               deviceListMetadata: {},
+                                               deviceListMetadataVersion: 2
+                                       },
+                                       interactiveMessage: WAProto.Message.InteractiveMessage.create({
+                                               contextInfo: message.contextInfo,
+                                               body: WAProto.Message.InteractiveMessage.Body.create({ text: message.text }),
+                                               footer: message.footer
+                                                       ? WAProto.Message.InteractiveMessage.Footer.create({ text: message.footer })
+                                                       : undefined,
+                                               header: WAProto.Message.InteractiveMessage.Header.create({
+                                                       title: message.title,
+                                                       subtitle: message.subtitle,
+                                                       hasMediaAttachment:
+                                                               header.hasMediaAttachment || !!header.image || !!header.video || !!header.document || !!header.location || !!header.product,
+                                                       imageMessage: image || undefined,
+                                                       videoMessage: video || undefined,
+                                                       documentMessage: document || undefined,
+                                                       locationMessage: header.location || undefined,
+                                                       productMessage: header.product || undefined
+                                               }),
+                                               nativeFlowMessage: WAProto.Message.InteractiveMessage.NativeFlowMessage.create({
+                                                       buttons: message.interactiveButtons
+                                               })
+                                       })
+                               }
+                       }
+               }
+       } else if ('text' in message) {
 		const extContent = { text: message.text } as WATextMessage
 
 		let urlInfo = message.linkPreview
@@ -444,55 +493,6 @@ export const generateWAMessageContent = async (
                                 productImage: imageMessage
                         }
                 })
-        } else if ('interactiveButtons' in message) {
-                const header = message.header || {}
-                let image: proto.Message.IImageMessage | undefined
-                let video: proto.Message.IVideoMessage | undefined
-                let document: proto.Message.IDocumentMessage | undefined
-
-                if (header.image) {
-                        ;({ imageMessage: image } = await prepareWAMessageMedia({ image: header.image }, options))
-                }
-
-                if (header.video) {
-                        ;({ videoMessage: video } = await prepareWAMessageMedia({ video: header.video }, options))
-                }
-
-                if (header.document) {
-                        ;({ documentMessage: document } = await prepareWAMessageMedia({ document: header.document }, options))
-                }
-
-                m = {
-                        viewOnceMessageV2Extension: {
-                                message: {
-                                        messageContextInfo: {
-                                                deviceListMetadata: {},
-                                                deviceListMetadataVersion: 2
-                                        },
-                                        interactiveMessage: WAProto.Message.InteractiveMessage.create({
-                                                contextInfo: message.contextInfo,
-                                                body: WAProto.Message.InteractiveMessage.Body.create({ text: message.text }),
-                                                footer: message.footer
-                                                        ? WAProto.Message.InteractiveMessage.Footer.create({ text: message.footer })
-                                                        : undefined,
-                                                header: WAProto.Message.InteractiveMessage.Header.create({
-                                                        title: message.title,
-                                                        subtitle: message.subtitle,
-                                                        hasMediaAttachment:
-                                                                header.hasMediaAttachment || !!header.image || !!header.video || !!header.document || !!header.location || !!header.product,
-                                                        imageMessage: image || undefined,
-                                                        videoMessage: video || undefined,
-                                                        documentMessage: document || undefined,
-                                                        locationMessage: header.location || undefined,
-                                                        productMessage: header.product || undefined
-                                                }),
-                                                nativeFlowMessage: WAProto.Message.InteractiveMessage.NativeFlowMessage.create({
-                                                        buttons: message.interactiveButtons
-                                                })
-                                        })
-                                }
-                        }
-                }
         } else if ('listReply' in message) {
                 m.listResponseMessage = { ...message.listReply }
         } else if ('poll' in message) {
