@@ -52,32 +52,28 @@ async function startBot() {
     if (!text) return;
 
     if (text === '!ping') {
-      await sock.sendMessage(sender,  {
-   text: 'This is a template message!',
-   footer: '© 2025 - Ssa Team',
-   templateButtons: [{
-         index: 1,
-         urlButton: {
-            displayText: 'Follow Me',
-            url: 'https://api.ssateam.my.id'
-         },
-      },
-      {
-         index: 2,
-         callButton: {
-            displayText: 'Call Me!',
-            phoneNumber: '628xxx'
-         },
-      },
-      {
-         index: 3,
-         quickReplyButton: {
-            displayText: 'This is a reply, just like normal buttons!',
-            id: 'id-like-buttons-message'
-         },
-      }
-   ]
-});
+      await sock.sendMessage(sender, {
+        text: 'This is an interactive button message!',
+        footer: '© 2025 - Ssa Team',
+        buttons: [
+          {
+            buttonId: 'id-follow',
+            buttonText: { displayText: 'Follow Me' },
+            type: 1
+          },
+          {
+            buttonId: 'id-call',
+            buttonText: { displayText: 'Call Me!' },
+            type: 1
+          },
+          {
+            buttonId: 'id-reply',
+            buttonText: { displayText: 'Quick Reply' },
+            type: 1
+          }
+        ],
+        headerType: 1
+      });
       console.log(`↩️ Replied "Pong!" to ${sender}`);
     }
   });
