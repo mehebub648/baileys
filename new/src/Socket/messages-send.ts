@@ -691,20 +691,20 @@ export const makeMessagesSocket = (config: SocketConfig) => {
                 }
         }
 
-        const getButtonArgs = (message: proto.IMessage) => {
-                if (message.templateMessage) {
-                        // TODO: Add attributes
-                        return {}
-                } else if (message.listMessage) {
-                        const type = message.listMessage.listType
-                        if (!type) {
-                                throw new Boom('Expected list type inside message')
-                        }
-                        return { v: '2', type: ListType[type].toLowerCase() }
-                } else {
-                        return {}
-                }
-        }
+       const getButtonArgs = (message: proto.IMessage): Record<string, string> => {
+               if (message.templateMessage) {
+                       // TODO: Add attributes
+                       return {}
+               } else if (message.listMessage) {
+                       const type = message.listMessage.listType
+                       if (!type) {
+                               throw new Boom('Expected list type inside message')
+                       }
+                       return { v: '2', type: ListType[type].toLowerCase() }
+               } else {
+                       return {}
+               }
+       }
 
 	const getPrivacyTokens = async (jids: string[]) => {
 		const t = unixTimestampSeconds().toString()
