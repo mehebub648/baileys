@@ -793,9 +793,10 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				const isDeleteMsg = 'delete' in content && !!content.delete
 				const isEditMsg = 'edit' in content && !!content.edit
 				const isPinMsg = 'pin' in content && !!content.pin
-				const isPollMessage = 'poll' in content && !!content.poll
-				const additionalAttributes: BinaryNodeAttributes = {}
-				const additionalNodes: BinaryNode[] = []
+                                const isPollMessage = 'poll' in content && !!content.poll
+                                const isInteractive = 'interactiveButtons' in content && !!content.interactiveButtons
+                                const additionalAttributes: BinaryNodeAttributes = {}
+                                const additionalNodes: BinaryNode[] = []
 				// required for delete
 				if (isDeleteMsg) {
 					// if the chat is a group, and I am not the author, then delete the message as an admin
@@ -804,18 +805,30 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					} else {
 						additionalAttributes.edit = '7'
 					}
-				} else if (isEditMsg) {
-					additionalAttributes.edit = '1'
-				} else if (isPinMsg) {
-					additionalAttributes.edit = '2'
-				} else if (isPollMessage) {
-					additionalNodes.push({
-						tag: 'meta',
-						attrs: {
-							polltype: 'creation'
-						}
-					} as BinaryNode)
-				}
+                                } else if (isEditMsg) {
+                                        additionalAttributes.edit = '1'
+                                } else if (isPinMsg) {
+                                        additionalAttributes.edit = '2'
+                                } else if (isPollMessage) {
+                                        additionalNodes.push({
+                                                tag: 'meta',
+                                                attrs: {
+                                                        polltype: 'creation'
+                                                }
+                                        } as BinaryNode)
+                                } else if (isInteractive) {
+                                        additionalNodes.push({
+                                                tag: 'biz',
+                                                attrs: {},
+                                                content: [
+                                                        {
+                                                                tag: 'interactive',
+                                                                attrs: { type: 'native_flow', v: '1' },
+                                                                content: [{ tag: 'native_flow', attrs: { name: 'quick_reply' } }]
+                                                        }
+                                                ]
+                                        } as BinaryNode)
+                                }
 
 				if ('cachedGroupMetadata' in options) {
 					console.warn(

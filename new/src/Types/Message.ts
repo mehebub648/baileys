@@ -152,7 +152,16 @@ export type GroupInviteInfo = {
 }
 
 export type WASendableProduct = Omit<proto.Message.ProductMessage.IProductSnapshot, 'productImage'> & {
-	productImage: WAMediaUpload
+        productImage: WAMediaUpload
+}
+
+export type InteractiveHeader = {
+        hasMediaAttachment?: boolean
+        image?: WAMediaUpload
+        video?: WAMediaUpload
+        document?: WAMediaUpload
+        location?: proto.Message.ILocationMessage
+        product?: proto.Message.IProductMessage
 }
 
 export type AnyRegularMessageContent = (
@@ -196,16 +205,26 @@ export type AnyRegularMessageContent = (
 			 */
 			time?: 86400 | 604800 | 2592000
 	  }
-	| {
-			product: WASendableProduct
-			businessOwnerJid?: string
-			body?: string
-			footer?: string
-	  }
-	| SharePhoneNumber
-	| RequestPhoneNumber
+        | {
+                        product: WASendableProduct
+                        businessOwnerJid?: string
+                        body?: string
+                        footer?: string
+          }
+        | ({
+                        text: string
+                        footer?: string
+                        title?: string
+                        subtitle?: string
+                        interactiveButtons: proto.Message.InteractiveMessage.NativeFlowMessage.INativeFlowButton[]
+                        header?: InteractiveHeader
+          } & Mentionable &
+                        Contextable &
+                        Editable)
+        | SharePhoneNumber
+        | RequestPhoneNumber
 ) &
-	ViewOnce
+        ViewOnce
 
 export type AnyMessageContent =
 	| AnyRegularMessageContent

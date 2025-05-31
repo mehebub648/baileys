@@ -98,6 +98,7 @@ import makeWASocket from '@whiskeysockets/baileys'
         - [Reaction Message](#reaction-message)
         - [Pin Message](#pin-message)
         - [Poll Message](#poll-message)
+        - [Interactive Buttons](#interactive-buttons)
     - [Sending with Link Preview](#sending-messages-with-link-previews)
     - [Media Messages](#media-messages)
         - [Gif Message](#gif-message)
@@ -575,6 +576,27 @@ await sock.sendMessage(
             values: ['Option 1', 'Option 2', ...],
             selectableCount: 1,
             toAnnouncementGroup: false // or true
+        }
+    }
+)
+```
+
+#### Interactive Buttons
+```ts
+await sock.sendMessage(
+    jid,
+    {
+        text: 'What do you think about these baileys?',
+        footer: 'Im-Dims - 2025',
+        title: 'Hi there!',
+        interactiveButtons: [
+            {
+                name: 'quick_reply',
+                buttonParamsJson: JSON.stringify({ display_text: 'Menu', id: '.menu' })
+            }
+        ],
+        header: {
+            image: { url: 'https://i.ibb.co/qkxBSny/image.jpg' }
         }
     }
 )
